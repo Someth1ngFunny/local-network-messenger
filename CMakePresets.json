@@ -1,0 +1,25 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "client-release",
+      "displayName": "Client Release Preset",
+      "description": "Preset to use create project release version",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "client-debug",
+      "displayName": "Client Debug Preset",
+      "description": "Preset to use create project debug version",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    }
+  ]
+}
