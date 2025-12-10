@@ -7,8 +7,7 @@
       "description": "Preset to use create project release version",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
@@ -17,8 +16,7 @@
       "description": "Preset to use create project debug version",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     }
   ]
