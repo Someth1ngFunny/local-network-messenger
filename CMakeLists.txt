@@ -3,7 +3,7 @@ project(lnms LANGUAGES CXX)
 
 find_package(asio QUIET)
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+set(CMAKE_CXX_STANDARD 20)
 
 # Add commands file for C++ intellisense in IDE 
 # stored at "${workspaceFolder}/build/compile_commands.json"
@@ -23,12 +23,17 @@ if (NOT DEFINED CMAKE_CONFIGURATION_TYPES)
   endif()
 endif()
 
+include(FetchContent)
+
+# link to asio whenever ptoject 
+# build by conan or cmake
+add_library(asio_lib INTERFACE)
+
 if(asio_FOUND)
   # conan install
-  target_link_libraries(${PROJECT_NAME} asio::asio)
+  target_link_libraries(asio_lib INTERFACE asio::asio)
 else()
-  # build withouth conan
-  include(FetchContent)
+  # build without conan
 
   FetchContent_Declare(
     asio
@@ -37,31 +42,19 @@ else()
   )
   FetchContent_MakeAvailable(asio)
 
-  if (NOT TARGET asio_lib) 
-    add_library(asio_lib INTERFACE)
-    target_include_directories(asio_lib
-      INTERFACE
-        ${asio_SOURCE_DIR}/asio/include
-    )
-    target_compile_definitions(asio_lib
-      INTERFACE
-        ASIO_STANDALONE
-    )
+  target_include_directories(asio_lib
+    INTERFACE
+      ${asio_SOURCE_DIR}/asio/include
+  )
+  target_compile_definitions(asio_lib
+    INTERFACE
+      ASIO_STANDALONE
+  )
 
-    if (WIN32)
-      target_link_libraries(asio_lib INTERFACE ws2_32)
-    endif()
-
-    target_link_libraries(${PROJECT_NAME} PRIVATE asio_lib)
-  endif()
-
-  # Single-config generator
-  if (NOT DEFINED CMAKE_CONFIGURATION_TYPES)
-    set_target_properties(${PROJECT_NAME}
-      PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}"
-    )
+  if (WIN32)
+    target_link_libraries(asio_lib INTERFACE ws2_32)
   endif()
 endif()
 
 add_subdirectory(lib)
+add_subdirectory(src)
