@@ -9,21 +9,51 @@
 
 Logic GLOBAL_STATE;
 
-std::unordered_map<std::string, void (*)(const std::vector<std::string>&)> command_handler;
+void help(const std::vector<LexParser::lexem> &lexems)
+{
+  std::cout 
+    << "Avaialble commands are:\n" \
+    "\techo - print arguments provided\n" \
+    "\texit - quit the program" \
+    "\thelp - print current message" \
+    << std::endl;
+}
 
-void exit(const std::vector<std::string> &lexems) 
+void exit(const std::vector<LexParser::lexem> &lexems) 
 {
   throw std::runtime_error("exit");
 }
 
-void handle_uknown_command(const std::string &command) 
+void echo(const std::vector<LexParser::lexem> &lexems) 
 {
-  std::cout << std::format("Uknown command: \"{}\"", command) << std::endl;
+  const int n = lexems.size();
+  for (int i = 1; i < n; ++i)
+  {
+    if (lexems[i].type == LexParser::LexType::string) {
+      std::cout << std::format("\"{}\"", lexems[i].str) << " ";
+    } else {
+      std::cout << lexems[i].str << " ";
+    }
+  }
+  std::cout << std::endl;
+}
+
+void handle_uknown_command(const LexParser::lexem &command) 
+{
+  std::cout << std::format("Uknown command: \"{}\"", command.str) << std::endl;
 }
 
 int main(int argc, char* argv[]) {
-
+  std::unordered_map<
+    std::string, 
+    void (*)(const std::vector<LexParser::lexem>&)
+  > command_handler;
+  command_handler["help"] = help;
+  command_handler["HELP"] = help;
   command_handler["exit"] = exit;
+  command_handler["EXIT"] = exit;
+  command_handler["echo"] = echo;
+  command_handler["ECHO"] = echo;
 
   try
   {
@@ -40,24 +70,28 @@ int main(int argc, char* argv[]) {
     {
       std::stringstream stream_line(str_line);
       
-      std::vector<std::string> lexems;
-      std::string lexem;
-      while (stream_line >> lexem)
+      std::vector<LexParser::lexem> lexems;
+      try 
       {
-        lexems.push_back(lexem);
+        LexParser::pars(str_line.data(), lexems);
       }
+      catch (LexParser::InvalidStringUnclosedQuotes &e)
+      {
+        std::cerr 
+          << "Invalid string, unclosed quotes: " 
+          << e.what()
+          << std::endl;
+        continue;
+      }
+   
+      if (lexems.empty()) { continue; }
 
-      if (lexems.empty()) 
-      { 
-        continue; 
-      }
-      if (!command_handler.contains(lexems[0])) 
+      if (!command_handler.contains(lexems[0].str)) 
       {
         handle_uknown_command(lexems[0]);
         continue;
       }
-
-      (command_handler[lexems[0]])(lexems);
+      (command_handler[lexems[0].str])(lexems);
     }
 
   } 
