@@ -1,8 +1,10 @@
-#include "lexparser.hpp"
-#include "errors.hpp"
 #include <cstring>
 #include <format>
 #include <vector>
+#include <iostream>
+
+#include "lexparser.hpp"
+#include "errors.hpp"
 
 enum State {
   SEARCH,
@@ -14,7 +16,7 @@ void LexParser::pars(const char* inp, std::vector<lexem> &output) {
   State state = State::SEARCH;
 
   std::string cur;
-  int end = std::strlen(inp)+1;
+  const int end = std::strlen(inp);
   for (int i = 0; i <= end; ++i) {
     switch(state) 
     {
@@ -29,11 +31,15 @@ void LexParser::pars(const char* inp, std::vector<lexem> &output) {
       cur += inp[i];
       break;
     case State::WORD:
-      if (std::isspace(inp[i]) || inp[i] == '\0')
+      if (std::isspace(inp[i]) || inp[i] == '\0' || inp[i] == '"')
       { 
         output.push_back(lexem{cur, LexType::word});
         cur.clear();
-        state = State::SEARCH;
+        if (inp[i] == '"') {
+          state = State::STRING;
+        } else {
+          state = State::SEARCH;
+        }
         continue;
       }
       cur += inp[i];

@@ -11,7 +11,6 @@ namespace LexParser
   enum LexType 
   {
     string,
-    flag,
     word
   };
   
