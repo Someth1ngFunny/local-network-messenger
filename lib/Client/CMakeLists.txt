@@ -1,4 +1,4 @@
-add_executable(Client)
+add_library(Client)
 
 target_sources(Client
   PRIVATE
@@ -7,4 +7,9 @@ target_sources(Client
   PUBLIC
     FILE_SET HEADERS
     FILES client.hpp
+)
+
+target_link_libraries(Client
+  PRIVATE 
+    asio_lib
 )

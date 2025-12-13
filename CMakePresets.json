@@ -2,7 +2,7 @@
   "version": 4,
   "configurePresets": [
     {
-      "name": "client-release",
+      "name": "lnms-release",
       "displayName": "Client Release Preset",
       "description": "Preset to use create project release version",
       "binaryDir": "${sourceDir}/build",
@@ -11,7 +11,7 @@
       }
     },
     {
-      "name": "client-debug",
+      "name": "lnms-debug",
       "displayName": "Client Debug Preset",
       "description": "Preset to use create project debug version",
       "binaryDir": "${sourceDir}/build",

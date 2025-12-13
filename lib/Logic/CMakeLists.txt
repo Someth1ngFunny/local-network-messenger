@@ -1,7 +1,12 @@
-add_library(Logic INTERFACE)
+add_library(Logic)
 
 target_sources(Logic
-  INTERFACE
+  PUBLIC
     FILE_SET HEADERS
     FILES logic.hpp
+)
+
+target_link_libraries(Logic
+  PUBLIC
+    Client
 )

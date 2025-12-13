@@ -16,8 +16,7 @@ set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES OFF)
 # Single-config generator
 if (NOT DEFINED CMAKE_CONFIGURATION_TYPES)
   if (NOT CMAKE_BUILD_TYPE)
-    
-    set(CMAKE_BUILD_TYPE Release)
+    set(CMAKE_BUILD_TYPE Release CACHE)
   elseif(NOT CMAKE_BUILD_TYPE MATCHES "^(Debug|Release|RelWithDebInfo|MinSizeRel)$")
     message(FATAL_ERROR "Invalid CMAKE_BUILD_TYPE=\"${CMAKE_BUILD_TYPE}\". Valid: Debug, Release, RelWithDebInfo, MinSizeRel")
   endif()
