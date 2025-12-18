@@ -1,16 +1,13 @@
-add_library(Logger)
-
-option(BUILD_LOGGER_SMALL "Build light version logger" ON)
+add_library(Logger INTERFACE)
 
 target_sources(Logger
-  PRIVATE
-    logger.cpp
-  PUBLIC
+  INTERFACE
     FILE_SET HEADERS
-    FILES logger.hpp
 )
 
-target_compile_definitions(Logger
-  PRIVATE
-    BUILD_LOGGER_SMALL ${BUILD_LOGGER_SMALL}
-)
+if (BUILD_LOGGER_SMALL)
+  target_compile_definitions(Logger
+    INTERFACE
+      BUILD_LOGGER_SMALL
+  )
+endif()

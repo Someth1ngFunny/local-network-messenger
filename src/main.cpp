@@ -1,5 +1,4 @@
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -45,9 +44,7 @@ int main(int argc, char* argv[]) {
     };
 
     while (welcome()) 
-    {
-      std::stringstream stream_line(str_line);
-      
+    { 
       std::vector<LexParser::lexem> lexems;
       try 
       {
@@ -86,10 +83,39 @@ int main(int argc, char* argv[]) {
 }
 
 void send(const std::vector<LexParser::lexem> &args) {
-  if (args.size() == 1) {
-
+  if (args.size() == 1 || args.size() > 6) 
+  {
+    std::cout 
+      << "send [(-u)(-t)] [(-v4)(-v6)] <address> <port> <\"message\">"
+      << std::endl;
+    return;
   }
-  G_LOGIC.send_udp_message(args[0].str, "daytime");
+  
+  const int n = args.size();
+  bool is_udp = true;
+  int options = 0;
+
+  for (int i = 1; i < n-3; ++i) {
+    if (args[i].str == "-u")
+      is_udp = true;
+    else if (args[i].str == "-t")
+      is_udp = false;
+    else if (args[i].str == "-v4")
+      options += Client::SendOptions::ip_v4;
+    else if (args[i].str == "-v6")
+      options += Client::SendOptions::ip_v6;
+    else
+      throw Interpreter::InvalidFlagArgument(args[i].str, {"-u", "-t", "-v4", "-v6"});
+  }
+
+  std::string addres  = args[n-3].str;
+  std::string port    = args[n-2].str;
+  std::string message = args[n-1].str;
+
+  if (is_udp)
+    G_LOGIC.send_udp_message_sync(addres, port, message, options);
+  else
+    G_LOGIC.send_tcp_message_sync(addres, port, message, options);
 }
 
 void help(const std::vector<LexParser::lexem> &args)

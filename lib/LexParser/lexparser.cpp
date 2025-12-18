@@ -9,6 +9,7 @@
 enum State {
   SEARCH,
   STRING,
+  FLAG,
   WORD
 };
 

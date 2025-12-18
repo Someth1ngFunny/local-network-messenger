@@ -6,7 +6,9 @@ target_sources(Client
 
   PUBLIC
     FILE_SET HEADERS
-    FILES client.hpp
+    FILES 
+      client.hpp
+      client_servers.hpp
 )
 
 target_link_libraries(Client
