@@ -170,7 +170,8 @@ void help(const std::vector<LexParser::lexem> &args)
   std::cout 
     << "Avaialble commands are:\n" \
     "\tsend - send a message to provided host and port\n" \
-    "\tclose - close command input menu (reopen via \\n)\n" \
+    "\tfind - send echo request to hosts in the same local-network\n" \
+    "\tclose - close command input menu (reopen via pressing Enter)\n" \
     "\techo - print arguments provided\n" \
     "\thelp - print current message\n" \
     "\texit - quit the program" \

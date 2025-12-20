@@ -14,6 +14,18 @@
 #include "errors.hpp"
 #include "logic_write_buffer.hpp"
 
+void print_app_message() {
+  std::cout 
+    << "LNMS - Local-Network Messenger\n" \
+    "\t Programm runs in 2 mods: write and read\n" \
+    "\t In write mode programm waits for your input\n" \
+    "\t Exit write mode via command 'close'\n" \
+    "\t In read mode programm display any get messages\n" \
+    "\t Back to write mode via pressing Enter \n" \
+    "\n" \
+    "\tUse 'help' to get available commands description\n"
+    << std::endl;
+}
 class Logic 
 {
 private:
@@ -45,6 +57,8 @@ public:
       main_writer(write_mutex, std::cout),
       broadcast_echo_writer(write_mutex, std::cout)
   {
+    print_app_message();
+
     for (auto port : possible_ports) {
       try {
         tcp_server__ = client.start_listening_tcp(
