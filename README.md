@@ -1,20 +1,22 @@
 # LNMS (local-network-messenger)
 
-LNMS is a simple messenger for communication between users in the same network via TCP & UDP sockets.
+LNMS is a simple programm for communication between users in the same network via TCP & UDP sockets.
 
 ## Installation
 
-The project may be instaleld via only CMake or only Python.
+The project can be instaled via CMake or Python.
 
-Output program is generated in `./build/(Debug | Release)/lnms`
+Output program is generated in `./build/Release/lnms` or `./build/Debug/lnms` (dependes on chosen configuration)
 
 ### 1. CMake
 
-```shell
-cmake -G "Unix Makefiles" -B build
+```txt
+cmake --preset lnms-release
+// OR
+cmake -B build
 ```
 
-```shell
+```txt
 cmake --build build
 ```
 
@@ -22,50 +24,50 @@ cmake --build build
 
 1. Create venv
 
-```shell
+```txt
 python -m venv .venv
 ```
 
 2. Install requirements
 
-```shell
+```txt
 pip install -r requirements.txt
 
 // OR (workaround with not UTF-8 character in path)
-* python -m pip install -r requirements.txt 
+python -m pip install -r requirements.txt 
 ```
 
 3. Install packages
 
-```shell
+```txt
 conan install .
 
 // OR (workaround with not UTF-8 character in path)
-* python .venv\Scripts\conan.exe install .
+python .venv\Scripts\conan.exe install .
 ```
 
 4. CMake activation (optional)
 
-```shell
+```txt
 
 build/generators/conanbuild(.sh | .bat | .ps1)
 
 // to deactivate
 build/generators/deactivate_conanbuild(.sh | .bat | .ps1)
 
-// If you need .ps1 script (POWERSHELL) rerun 3rd step with flag
-// (<COMMAND> --conf=tools.env.virtualenv:powershell=<executable>)
+// If you need .ps1 script files (powershell) rerun 3rd step with flag:
+// <COMMAND> --conf=tools.env.virtualenv:powershell=<executable>
 ```
 
 5. Building via CMake
 
-```shell
+```txt
 cmake --preset lnms-release
 // OR DEBUG
 cmake --preset lnms-debug
 ```
 
-```shell
+```txt
 cmake --build build
 ```
 
@@ -75,7 +77,7 @@ To provide to your IDE information about locations of building libraries include
 
 CMake files are already configured to build `compile_commands.json` in `./build` directory, but they are created only if you are building via single-config generators as `Unix Makefiles` or `Ninja`. The build system may be specified via `-G "<BUILD_SYSTEM>"` (for example `-G "Ninja"`) at CMake generate command, for example:
 
-```shell
+```txt
 cmake --preset lnms-release -G "Unix Makefiles"
 // OR
 cmake -B build -G "Unix Makefiles"
