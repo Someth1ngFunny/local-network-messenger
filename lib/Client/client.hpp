@@ -9,10 +9,12 @@
 
 #include "client_servers.hpp"
 
+#define SEND_RECV_BUFFER 1024
+
 class Client 
 {
 private:
-  asio::io_context& io_context;
+  asio::io_context& io_context_;
 
 public:
   enum SendOptions {
@@ -20,18 +22,72 @@ public:
     ip_v6 = 2
   };
 
-
   Client(asio::io_context& io_context)
-    : io_context(io_context)
+    : io_context_(io_context)
   {
   }
 
   std::shared_ptr<tcp_server> start_listening_tcp(
     unsigned int port, 
-    void (*handle_message_func)(tcp_connection::pointer, const std::error_code&, size_t)
+    tcp_connection::read_handler_func handle_read_func
   ) 
   {
-    return std::make_shared<tcp_server>(io_context, port, handle_message_func);
+    return std::make_shared<tcp_server>(io_context_, port, handle_read_func);
+  }
+
+  std::shared_ptr<udp_server> start_listening_udp(
+    unsigned int port, 
+    udp_server::read_handler_func handle_read_func
+  ) 
+  {
+    return std::make_shared<udp_server>(io_context_, port, handle_read_func);
+  }
+
+  void send_broadcast_async(
+    unsigned int port, 
+    const std::string &message
+  ) {
+    using udp = asio::ip::udp;
+
+    auto socket = std::make_shared<udp::socket>(io_context_);
+    
+    socket->open(udp::v4());
+    socket->set_option(asio::socket_base::broadcast(true));
+
+    socket->bind(udp::endpoint(udp::v4(), 0));
+
+    udp::endpoint endpoint(asio::ip::address_v4::broadcast(), port);
+    std::shared_ptr<std::string> payload = std::make_shared<std::string>(message);
+
+    auto recv_buf = std::make_shared<std::array<char, 128>>();
+    auto sender_ep = std::make_shared<udp::endpoint>();
+    
+    socket->async_send_to(
+      asio::buffer(*payload),
+      endpoint,
+      [socket, payload, recv_buf, sender_ep](const std::error_code& e, size_t s){
+        socket->async_receive_from(
+          asio::buffer(*recv_buf),
+          *sender_ep,
+          [socket, payload, recv_buf, sender_ep](const std::error_code& e, size_t s){
+            if (s < 3) return;
+            (*recv_buf)[s] = '\0';
+            std::cout << "br_receive_from: " << recv_buf->data() << std::endl;
+          }
+        );
+      }
+    );
+
+    // std::array<char, 128> recv_buffer;
+    // socket.async_receive_from(
+    //   asio::buffer(recv_buffer),
+    //   endpoint,
+    //   [&recv_buffer](const std::error_code& e, size_t s){
+    //     if (s < 3) return;
+    //     recv_buffer[s] = '\0';
+    //     std::cout << "br_receive_from: " << recv_buffer.data() << std::endl;
+    //   }
+    // );
   }
 
   void send_udp_message_sync(
@@ -42,25 +98,21 @@ public:
   )
   {
     using asio::ip::udp;
+
+    udp protocol = (options & SendOptions::ip_v6) ? udp::v6() : udp::v4();
     
-    udp::resolver resolver(io_context);
+    udp::resolver resolver(io_context_);
     udp::endpoint receiver_endpoint =
-      *resolver.resolve(udp::v4(), receiver_address, receiver_port).begin();
+      *resolver.resolve(
+        protocol, 
+        receiver_address, 
+        receiver_port
+      ).begin();
 
-    udp::socket socket(io_context);
-    socket.open(udp::v4());
+    udp::socket socket(io_context_);
+    socket.open(protocol);
 
-    std::array<char, 1> send_buf = {{ 0 }};
-    socket.send_to(asio::buffer(send_buf), receiver_endpoint);
-    
-    std::array<char, 128> recv_buf;
-    udp::endpoint sender_endpoint;
-    size_t len = socket.receive_from(
-      asio::buffer(recv_buf), 
-      sender_endpoint
-    );
-
-    std::cout.write(recv_buf.data(), len);
+    socket.send_to(asio::buffer(message), receiver_endpoint);
   }
 
   void send_tcp_message_sync(
@@ -72,7 +124,7 @@ public:
   {
     using asio::ip::tcp;
 
-    tcp::resolver resolver(io_context);
+    tcp::resolver resolver(io_context_);
     tcp::resolver::results_type endpoints;
     
     if ((options & (SendOptions::ip_v4 | SendOptions::ip_v6)) == (SendOptions::ip_v4 | SendOptions::ip_v6)) {
@@ -83,24 +135,17 @@ public:
       endpoints = resolver.resolve(tcp::v4(), receiver_address, receiver_port);
     }
     
-    tcp::socket socket(io_context);
+    tcp::socket socket(io_context_);
     asio::connect(socket, endpoints);
 
     std::error_code send_error;
-    std::cout << "write start!" << std::endl;
     size_t send_len = socket.write_some(asio::buffer(message), send_error);
-    if (send_error && send_error != asio::error::eof)
+    if (send_error) 
+    {
+      if (send_error == asio::error::eof)
+        return;
       throw std::system_error(send_error);
-    std::cout << "write end!" << std::endl;
-
-    std::array<char, 128> recv_buf;
-    std::error_code error;
-    size_t len = socket.read_some(asio::buffer(recv_buf), error);
-
-    if (error && error != asio::error::eof)
-      throw std::system_error(error);
-
-    std::cout.write(recv_buf.data(), len);
+    }
   }
 
 };

@@ -6,6 +6,7 @@ target_sources(Logic
     FILES 
       logic.hpp
       errors.hpp
+      logic_write_buffer.hpp
 )
 
 target_link_libraries(Logic

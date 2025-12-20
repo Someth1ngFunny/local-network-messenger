@@ -28,3 +28,11 @@ else()
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
   )
 endif()
+
+# TODO (think about include for IDE)
+# target_include_directories(lnms PRIVATE
+#   ${CMAKE_SOURCE_DIR}/lib/LexParser
+#   ${CMAKE_SOURCE_DIR}/lib/Logic
+#   ${CMAKE_SOURCE_DIR}/lib/Client
+#   ${CMAKE_SOURCE_DIR}/lib/Logger
+# )
