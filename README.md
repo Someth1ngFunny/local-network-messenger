@@ -4,9 +4,16 @@ LNMS is a simple programm for communication between users in the same network vi
 
 ## Installation
 
-The project can be instaled via CMake or Python.
+The project can be build via CMake or Python.
 
 Output program is generated in `./build/Release/lnms` or `./build/Debug/lnms` (dependes on chosen configuration)
+
+First, clone the project via git:
+
+```txt
+git clone https://github.com/Someth1ngFunny/local-network-messenger.git
+cd ./local-network-messenger
+```
 
 ### 1. CMake
 
