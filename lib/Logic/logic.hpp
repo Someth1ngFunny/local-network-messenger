@@ -170,8 +170,6 @@ public:
       self->get_recv_message().data()
     );
     main_writer.buf_write(oss.str());
-
-    self->send_back("hello!");
   }
 
   void handle_user_input_start() {
@@ -186,7 +184,32 @@ public:
 
   void find_hosts() {
     for (auto port : possible_broadcast_ports) {
-      client.send_broadcast_async(port, "");
+      client.send_broadcast_async(
+        port,
+        "",
+        std::chrono::milliseconds(500),
+        [this, port](const std::string& msg,
+                    const asio::ip::udp::endpoint& from,
+                    const std::error_code& ec) {
+          if (ec) {
+            if (ec == asio::error::timed_out) {
+              
+            } else {
+              
+            }
+            return;
+          }
+
+          std::ostringstream oss;
+          oss << std::format(
+            "found: {} from {}:{}\n", 
+            msg,
+            from.address().to_string(), 
+            from.port()
+          );
+          this->main_writer.buf_write(oss.str());
+        }
+      );
     }
   }
 

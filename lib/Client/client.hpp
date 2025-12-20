@@ -44,50 +44,55 @@ public:
   }
 
   void send_broadcast_async(
-    unsigned int port, 
-    const std::string &message
+      unsigned int port,
+      std::string message,
+      std::chrono::milliseconds timeout,
+      std::function<void(const std::string&, const asio::ip::udp::endpoint&, const std::error_code&)> handler
   ) {
     using udp = asio::ip::udp;
 
-    auto socket = std::make_shared<udp::socket>(io_context_);
-    
+    auto socket   = std::make_shared<udp::socket>(io_context_);
+    auto payload  = std::make_shared<std::string>(std::move(message));
+    auto recv_buf = std::make_shared<std::array<char, 1024>>();
+    auto sender   = std::make_shared<udp::endpoint>();
+    auto timer    = std::make_shared<asio::steady_timer>(io_context_);
+    auto done     = std::make_shared<std::atomic_bool>(false);
+
     socket->open(udp::v4());
     socket->set_option(asio::socket_base::broadcast(true));
-
     socket->bind(udp::endpoint(udp::v4(), 0));
 
-    udp::endpoint endpoint(asio::ip::address_v4::broadcast(), port);
-    std::shared_ptr<std::string> payload = std::make_shared<std::string>(message);
+    udp::endpoint bcast(asio::ip::address_v4::broadcast(), port);
 
-    auto recv_buf = std::make_shared<std::array<char, 128>>();
-    auto sender_ep = std::make_shared<udp::endpoint>();
-    
-    socket->async_send_to(
-      asio::buffer(*payload),
-      endpoint,
-      [socket, payload, recv_buf, sender_ep](const std::error_code& e, size_t s){
-        socket->async_receive_from(
-          asio::buffer(*recv_buf),
-          *sender_ep,
-          [socket, payload, recv_buf, sender_ep](const std::error_code& e, size_t s){
-            if (s < 3) return;
-            (*recv_buf)[s] = '\0';
-            std::cout << "br_receive_from: " << recv_buf->data() << std::endl;
+    timer->expires_after(timeout);
+    timer->async_wait([socket, timer, handler, done](const std::error_code& ec){
+      if (ec == asio::error::operation_aborted) return;
+      if (done->exchange(true)) return;
+      socket->cancel();
+      handler("", asio::ip::udp::endpoint{}, make_error_code(asio::error::timed_out));
+    });
+
+    socket->async_send_to(asio::buffer(*payload), bcast,
+      [socket, payload, recv_buf, sender, timer, handler, done](const std::error_code& se, std::size_t){
+        if (se) {
+          if (!done->exchange(true)) {
+            timer->cancel(); 
+            handler("", asio::ip::udp::endpoint{}, se);
+          }
+          return;
+        }
+        socket->async_receive_from(asio::buffer(*recv_buf), *sender,
+          [socket, recv_buf, sender, timer, handler, done](const std::error_code& re, std::size_t n){
+            timer->cancel(); 
+            if (re == asio::error::operation_aborted) return;
+            if (done->exchange(true)) return;
+            if (re) { handler("", asio::ip::udp::endpoint{}, re); return; }
+            std::string msg(recv_buf->data(), n);
+            handler(msg, *sender, {});
           }
         );
       }
     );
-
-    // std::array<char, 128> recv_buffer;
-    // socket.async_receive_from(
-    //   asio::buffer(recv_buffer),
-    //   endpoint,
-    //   [&recv_buffer](const std::error_code& e, size_t s){
-    //     if (s < 3) return;
-    //     recv_buffer[s] = '\0';
-    //     std::cout << "br_receive_from: " << recv_buffer.data() << std::endl;
-    //   }
-    // );
   }
 
   void send_udp_message_sync(

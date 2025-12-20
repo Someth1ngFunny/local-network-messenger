@@ -81,6 +81,11 @@ private:
     size_t bytes_transferred
   )
   {
+    if (error) {
+      if (error != asio::error::eof)
+        throw error;
+      return;
+    }
     if (bytes_transferred != sizeof(recv_buffer_) / sizeof(recv_buffer_[0]))
       self->recv_buffer_[bytes_transferred] = '\0';
     else

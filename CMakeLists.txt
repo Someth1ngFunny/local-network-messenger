@@ -51,7 +51,7 @@ else()
   )
 
   if (WIN32)
-    target_link_libraries(asio_lib INTERFACE ws2_32)
+    target_link_libraries(asio_lib INTERFACE ws2_32 mswsock)
   endif()
 endif()
 
