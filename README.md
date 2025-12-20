@@ -1,10 +1,6 @@
 # LNMS (local-network-messenger)
 
----
-
 LNMS is a simple messenger for communication between users in the same network via TCP & UDP sockets.
-
----
 
 ## Installation
 
