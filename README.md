@@ -46,7 +46,7 @@ conan install .
 python .venv\Scripts\conan.exe install .
 ```
 
-4. CMake activation (optional)
+4. CMake activation (optional, only if you don't have CMake with version >= 3.23)
 
 ```txt
 
